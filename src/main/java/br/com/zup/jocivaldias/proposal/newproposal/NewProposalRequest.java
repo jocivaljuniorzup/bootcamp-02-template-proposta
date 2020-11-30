@@ -1,12 +1,18 @@
 package br.com.zup.jocivaldias.proposal.newproposal;
 
 import br.com.zup.jocivaldias.proposal.shared.CpfCnpj;
+import br.com.zup.jocivaldias.proposal.shared.exception.ApiErrorException;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.PositiveOrZero;
 import java.math.BigDecimal;
+import java.util.List;
 
 public class NewProposalRequest {
 
@@ -40,8 +46,11 @@ public class NewProposalRequest {
         this.salary = salary;
     }
 
-
     public Proposal toModel() {
         return new Proposal(documentNumber, email, name, address, salary);
+    }
+
+    public String getDocumentNumber() {
+        return documentNumber;
     }
 }

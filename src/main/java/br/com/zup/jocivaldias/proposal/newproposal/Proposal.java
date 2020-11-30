@@ -42,6 +42,10 @@ public class Proposal {
     @PositiveOrZero
     private BigDecimal salary;
 
+    private Proposal(){
+
+    }
+
     public Proposal(@NotBlank String documentNumber,
                     @NotBlank @Email String email,
                     @NotBlank String name,

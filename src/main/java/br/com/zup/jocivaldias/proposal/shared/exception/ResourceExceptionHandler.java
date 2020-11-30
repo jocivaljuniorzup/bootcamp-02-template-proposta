@@ -1,16 +1,22 @@
 package br.com.zup.jocivaldias.proposal.shared.exception;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.server.ResponseStatusException;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 @ControllerAdvice
 public class ResourceExceptionHandler {
+
+    Logger logger = LoggerFactory.getLogger(ResourceExceptionHandler.class);
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ValidationError> methodArgumentNotValidException(MethodArgumentNotValidException e, HttpServletRequest request){
@@ -24,20 +30,22 @@ public class ResourceExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(err);
     }
 
+    @ExceptionHandler(ApiErrorException.class)
+    public ResponseEntity<StandardError> apiErrorException(ApiErrorException e, HttpServletRequest request){
+
+        StandardError standardError = new StandardError(System.currentTimeMillis(), e.getHttpStatus().value(),
+                "Request error", e.getReason(), request.getRequestURI());
+
+        return ResponseEntity.status(e.getHttpStatus()).body(standardError);
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<StandardError> illegalArgumentException(IllegalArgumentException e, HttpServletRequest request){
 
         StandardError standardError = new StandardError(System.currentTimeMillis(), HttpStatus.BAD_REQUEST.value(),
-                "Illegal argument exception", e.getMessage(), request.getRequestURI());
+                "Internal API error", "There was an error while processing the request. Try again later", request.getRequestURI());
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(standardError);
-    }
-
-    @ExceptionHandler(ObjectNotFoundException.class)
-    public ResponseEntity<StandardError> objectNotFound(ObjectNotFoundException e, HttpServletRequest request){
-        StandardError err = new StandardError(System.currentTimeMillis(), HttpStatus.NOT_FOUND.value(),
-                "Not found", e.getMessage(), request.getRequestURI());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(err);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(standardError);
     }
 
 }
