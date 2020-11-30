@@ -42,6 +42,11 @@ public class Proposal {
     @PositiveOrZero
     private BigDecimal salary;
 
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private ProposalStatus status;
+
     private Proposal(){
 
     }
@@ -64,6 +69,7 @@ public class Proposal {
         this.name = name;
         this.address = address;
         this.salary = salary;
+        this.status = ProposalStatus.OPENED;
     }
 
     public UUID getId() {
@@ -88,5 +94,13 @@ public class Proposal {
 
     public BigDecimal getSalary() {
         return salary;
+    }
+
+    public ProposalStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ProposalStatus status) {
+        this.status = status;
     }
 }

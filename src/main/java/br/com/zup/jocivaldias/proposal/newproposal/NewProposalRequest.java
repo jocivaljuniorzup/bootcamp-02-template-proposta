@@ -3,7 +3,6 @@ package br.com.zup.jocivaldias.proposal.newproposal;
 import br.com.zup.jocivaldias.proposal.shared.CpfCnpj;
 import br.com.zup.jocivaldias.proposal.shared.exception.ApiErrorException;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
@@ -46,11 +45,15 @@ public class NewProposalRequest {
         this.salary = salary;
     }
 
-    public Proposal toModel() {
-        return new Proposal(documentNumber, email, name, address, salary);
-    }
+    public Proposal toModel(EntityManager entityManager) {
+        Query query = entityManager.createQuery("select 1 from Proposal where document_number = :value");
+        query.setParameter("value", documentNumber);
+        List<?> resultList = query.getResultList();
 
-    public String getDocumentNumber() {
-        return documentNumber;
+        if(!resultList.isEmpty())
+            throw new ApiErrorException(HttpStatus.UNPROCESSABLE_ENTITY,
+                    "There is already a proposal associated with this CPF / CNPJ");
+
+        return new Proposal(documentNumber, email, name, address, salary);
     }
 }
