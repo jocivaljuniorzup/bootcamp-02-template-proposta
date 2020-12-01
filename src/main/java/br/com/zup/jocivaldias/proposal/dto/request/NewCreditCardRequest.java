@@ -1,4 +1,4 @@
-package br.com.zup.jocivaldias.proposal.newproposal.dto.request;
+package br.com.zup.jocivaldias.proposal.dto.request;
 
 public class NewCreditCardRequest {
 

@@ -1,6 +1,6 @@
-package br.com.zup.jocivaldias.proposal.newproposal;
+package br.com.zup.jocivaldias.proposal.service;
 
-import br.com.zup.jocivaldias.proposal.newproposal.dto.request.NewCreditCardRequest;
+import br.com.zup.jocivaldias.proposal.dto.request.NewCreditCardRequest;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

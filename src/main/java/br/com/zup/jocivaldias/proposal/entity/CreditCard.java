@@ -1,10 +1,10 @@
-package br.com.zup.jocivaldias.proposal.newproposal;
+package br.com.zup.jocivaldias.proposal.entity;
 
 import org.springframework.util.Assert;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
@@ -16,7 +16,7 @@ public class CreditCard {
     private String cardNumber;
 
     @NotNull
-    @ManyToOne
+    @OneToOne
     private Proposal proposal;
 
     @Deprecated

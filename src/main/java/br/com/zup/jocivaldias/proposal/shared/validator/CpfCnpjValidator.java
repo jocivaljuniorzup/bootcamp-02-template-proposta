@@ -1,7 +1,6 @@
 package br.com.zup.jocivaldias.proposal.shared.validator;
 
 
-import br.com.zup.jocivaldias.proposal.shared.CpfCnpj;
 import br.com.zup.jocivaldias.proposal.shared.validator.util.BR;
 
 import javax.validation.ConstraintValidator;

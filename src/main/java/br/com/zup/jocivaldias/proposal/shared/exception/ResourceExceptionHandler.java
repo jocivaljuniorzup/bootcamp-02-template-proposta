@@ -8,9 +8,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.server.ResponseStatusException;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 @ControllerAdvice
@@ -44,6 +42,8 @@ public class ResourceExceptionHandler {
 
         StandardError standardError = new StandardError(System.currentTimeMillis(), HttpStatus.BAD_REQUEST.value(),
                 "Internal API error", "There was an error while processing the request. Try again later", request.getRequestURI());
+
+        logger.error("Internal API error, message: {}", e.getMessage());
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(standardError);
     }

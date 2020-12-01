@@ -1,8 +1,8 @@
-package br.com.zup.jocivaldias.proposal.newproposal.dto.request;
+package br.com.zup.jocivaldias.proposal.dto.request;
 
-import br.com.zup.jocivaldias.proposal.newproposal.Proposal;
-import br.com.zup.jocivaldias.proposal.newproposal.ProposalRepository;
-import br.com.zup.jocivaldias.proposal.shared.CpfCnpj;
+import br.com.zup.jocivaldias.proposal.entity.Proposal;
+import br.com.zup.jocivaldias.proposal.repository.ProposalRepository;
+import br.com.zup.jocivaldias.proposal.shared.validator.CpfCnpj;
 import br.com.zup.jocivaldias.proposal.shared.exception.ApiErrorException;
 import org.springframework.http.HttpStatus;
 

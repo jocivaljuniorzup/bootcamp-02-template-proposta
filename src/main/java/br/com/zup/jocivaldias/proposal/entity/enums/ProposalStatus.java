@@ -1,4 +1,4 @@
-package br.com.zup.jocivaldias.proposal.newproposal;
+package br.com.zup.jocivaldias.proposal.entity.enums;
 
 public enum ProposalStatus {
     OPENED,

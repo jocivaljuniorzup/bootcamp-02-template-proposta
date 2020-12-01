@@ -1,7 +1,8 @@
-package br.com.zup.jocivaldias.proposal.newproposal;
+package br.com.zup.jocivaldias.proposal.service;
 
-import br.com.zup.jocivaldias.proposal.newproposal.dto.request.ProposalAnalysisRequest;
-import br.com.zup.jocivaldias.proposal.newproposal.dto.response.ProposalAnalysisResponse;
+import br.com.zup.jocivaldias.proposal.dto.request.ProposalAnalysisRequest;
+import br.com.zup.jocivaldias.proposal.dto.response.ProposalAnalysisResponse;
+import br.com.zup.jocivaldias.proposal.entity.Proposal;
 import br.com.zup.jocivaldias.proposal.shared.exception.ApiErrorException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

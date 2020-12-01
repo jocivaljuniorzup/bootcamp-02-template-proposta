@@ -1,6 +1,7 @@
-package br.com.zup.jocivaldias.proposal.newproposal;
+package br.com.zup.jocivaldias.proposal.entity;
 
-import br.com.zup.jocivaldias.proposal.shared.CpfCnpj;
+import br.com.zup.jocivaldias.proposal.entity.enums.ProposalStatus;
+import br.com.zup.jocivaldias.proposal.shared.validator.CpfCnpj;
 import org.springframework.util.Assert;
 
 import javax.persistence.*;
@@ -46,6 +47,9 @@ public class Proposal {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ProposalStatus status;
+
+    @OneToOne(mappedBy = "proposal")
+    private CreditCard creditCard;
 
     @Deprecated
     private Proposal(){
@@ -97,6 +101,10 @@ public class Proposal {
         return salary;
     }
 
+    public CreditCard getCreditCard() {
+        return creditCard;
+    }
+
     public ProposalStatus getStatus() {
         return status;
     }
@@ -105,4 +113,7 @@ public class Proposal {
         this.status = status;
     }
 
+    public void setCreditCard(CreditCard creditCard) {
+        this.creditCard = creditCard;
+    }
 }

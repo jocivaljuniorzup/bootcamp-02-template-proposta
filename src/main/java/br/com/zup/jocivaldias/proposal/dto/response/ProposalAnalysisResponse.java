@@ -1,4 +1,4 @@
-package br.com.zup.jocivaldias.proposal.newproposal.dto.response;
+package br.com.zup.jocivaldias.proposal.dto.response;
 
 public class ProposalAnalysisResponse {
 

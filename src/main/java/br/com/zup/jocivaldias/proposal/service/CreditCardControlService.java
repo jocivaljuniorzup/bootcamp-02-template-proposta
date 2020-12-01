@@ -1,6 +1,11 @@
-package br.com.zup.jocivaldias.proposal.newproposal;
+package br.com.zup.jocivaldias.proposal.service;
 
-import br.com.zup.jocivaldias.proposal.newproposal.dto.request.NewCreditCardRequest;
+import br.com.zup.jocivaldias.proposal.dto.request.NewCreditCardRequest;
+import br.com.zup.jocivaldias.proposal.entity.CreditCard;
+import br.com.zup.jocivaldias.proposal.entity.Proposal;
+import br.com.zup.jocivaldias.proposal.entity.enums.ProposalStatus;
+import br.com.zup.jocivaldias.proposal.repository.CreditCardRepository;
+import br.com.zup.jocivaldias.proposal.repository.ProposalRepository;
 import feign.FeignException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,19 +18,19 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.util.List;
 
 @Component
-public class CreditCardService {
+public class CreditCardControlService {
 
     private CreditCardControl creditCardControl;
     private ProposalRepository proposalRepository;
     private CreditCardRepository creditCardRepository;
     private final TransactionTemplate transactionTemplate;
 
-    private Logger logger = LoggerFactory.getLogger(CreditCardService.class);
+    private Logger logger = LoggerFactory.getLogger(CreditCardControlService.class);
 
-    public CreditCardService(CreditCardControl creditCardControl,
-                             ProposalRepository proposalRepository,
-                             CreditCardRepository creditCardRepository,
-                             TransactionTemplate transactionTemplate) {
+    public CreditCardControlService(CreditCardControl creditCardControl,
+                                    ProposalRepository proposalRepository,
+                                    CreditCardRepository creditCardRepository,
+                                    TransactionTemplate transactionTemplate) {
         this.creditCardControl = creditCardControl;
         this.proposalRepository = proposalRepository;
         this.creditCardRepository = creditCardRepository;
