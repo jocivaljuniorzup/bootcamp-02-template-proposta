@@ -11,3 +11,17 @@ services:
       - MYSQL_PASSWORD=password
     ports:
       - 3306:3306
+
+  proposta:
+    image: zupacademy/proposta
+    restart: on-failure
+    depends_on:
+      - proposta-mysql
+    ports:
+      - 8080:8080
+    environment:
+      - DATABASE_HOST=proposta-mysql
+      - DATABASE_USER=proposta-user
+      - DATABASE_PASSWORD=password
+      - DATABASE_NAME=proposta
+      - DATABASE_PORT=3306
