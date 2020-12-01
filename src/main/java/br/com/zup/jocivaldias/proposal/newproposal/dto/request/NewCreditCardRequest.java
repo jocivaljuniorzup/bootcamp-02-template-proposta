@@ -1,14 +1,12 @@
-package br.com.zup.jocivaldias.proposal.newproposal;
+package br.com.zup.jocivaldias.proposal.newproposal.dto.request;
 
-public class ProposalAnalysisRequest {
+public class NewCreditCardRequest {
+
     private String documento;
     private String nome;
     private String idProposta;
 
-    public ProposalAnalysisRequest() {
-    }
-
-    public ProposalAnalysisRequest(String documento, String nome, String idProposta) {
+    public NewCreditCardRequest(String documento, String nome, String idProposta) {
         this.documento = documento;
         this.nome = nome;
         this.idProposta = idProposta;

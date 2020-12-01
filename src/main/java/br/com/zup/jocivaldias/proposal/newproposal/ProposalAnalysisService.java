@@ -1,5 +1,7 @@
 package br.com.zup.jocivaldias.proposal.newproposal;
 
+import br.com.zup.jocivaldias.proposal.newproposal.dto.request.ProposalAnalysisRequest;
+import br.com.zup.jocivaldias.proposal.newproposal.dto.response.ProposalAnalysisResponse;
 import br.com.zup.jocivaldias.proposal.shared.exception.ApiErrorException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,17 +26,13 @@ public class ProposalAnalysisService {
         ProposalAnalysisResponse proposalAnalysisResponse = null;
         try {
              proposalAnalysisResponse = proposalAnalysisClient.requestAnalysis(proposalAnalysisRequest);
-        } catch (FeignException.FeignClientException feignClientException){
-            if( feignClientException.status() == HttpStatus.UNPROCESSABLE_ENTITY.value()) {
+        } catch (FeignException.UnprocessableEntity unprocessableEntity){
                 try {
-                    proposalAnalysisResponse = new ObjectMapper().readValue(feignClientException.contentUTF8(), ProposalAnalysisResponse.class);
+                    proposalAnalysisResponse = new ObjectMapper().readValue(unprocessableEntity.contentUTF8(), ProposalAnalysisResponse.class);
                 } catch (JsonProcessingException e) {
                     throw new ApiErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Service temporarily unavailable. Try again later");
                 }
-            }
-            else
-                throw new ApiErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Service temporarily unavailable. Try again later");
-        } catch (FeignException.FeignServerException feignClientException){
+        } catch (FeignException feignException){
             throw new ApiErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Service temporarily unavailable. Try again later");
         }
 

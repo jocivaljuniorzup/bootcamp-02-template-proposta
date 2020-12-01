@@ -47,6 +47,7 @@ public class Proposal {
     @Column(nullable = false)
     private ProposalStatus status;
 
+    @Deprecated
     private Proposal(){
 
     }
@@ -103,4 +104,5 @@ public class Proposal {
     public void setStatus(ProposalStatus status) {
         this.status = status;
     }
+
 }

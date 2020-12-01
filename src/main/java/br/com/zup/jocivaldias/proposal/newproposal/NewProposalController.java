@@ -1,5 +1,7 @@
 package br.com.zup.jocivaldias.proposal.newproposal;
 
+import br.com.zup.jocivaldias.proposal.newproposal.dto.request.NewProposalRequest;
+import br.com.zup.jocivaldias.proposal.newproposal.dto.response.ProposalAnalysisResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
@@ -10,8 +12,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.validation.Valid;
 import java.net.URI;
 
@@ -19,25 +19,28 @@ import java.net.URI;
 @RequestMapping(path = "proposals")
 public class NewProposalController {
 
-    @PersistenceContext
-    private final EntityManager entityManager;
+    private final ProposalRepository proposalRepository;
     private final ProposalAnalysisService proposalAnalysisService;
     private final TransactionTemplate transactionTemplate;
 
     private final Logger logger = LoggerFactory.getLogger(NewProposalController.class);
 
-    public NewProposalController(EntityManager entityManager, ProposalAnalysisService proposalAnalysisService, TransactionTemplate transactionTemplate) {
-        this.entityManager = entityManager;
+    public NewProposalController(ProposalRepository proposalRepository,
+                                 ProposalAnalysisService proposalAnalysisService,
+                                 TransactionTemplate transactionTemplate) {
+        this.proposalRepository = proposalRepository;
         this.proposalAnalysisService = proposalAnalysisService;
         this.transactionTemplate = transactionTemplate;
     }
 
     @PostMapping
-    public ResponseEntity<?> create(@RequestBody @Valid NewProposalRequest newProposalRequest, UriComponentsBuilder uriComponentsBuilder) {
-        Proposal proposal = newProposalRequest.toModel(entityManager);
+    public ResponseEntity<?> create(@RequestBody @Valid NewProposalRequest newProposalRequest,
+                                    UriComponentsBuilder uriComponentsBuilder) {
+
+        Proposal proposal = newProposalRequest.toModel(proposalRepository);
 
         transactionTemplate.execute(status -> {
-            entityManager.persist(proposal);
+            proposalRepository.save(proposal);
             return proposal.getId();
         });
 
@@ -49,7 +52,7 @@ public class NewProposalController {
         }
 
         transactionTemplate.execute(status -> {
-            entityManager.merge(proposal);
+            proposalRepository.save(proposal);
             return proposal.getId();
         });
 

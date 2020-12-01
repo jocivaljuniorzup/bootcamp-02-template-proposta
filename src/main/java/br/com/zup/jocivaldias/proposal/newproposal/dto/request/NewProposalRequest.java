@@ -1,11 +1,11 @@
-package br.com.zup.jocivaldias.proposal.newproposal;
+package br.com.zup.jocivaldias.proposal.newproposal.dto.request;
 
+import br.com.zup.jocivaldias.proposal.newproposal.Proposal;
+import br.com.zup.jocivaldias.proposal.newproposal.ProposalRepository;
 import br.com.zup.jocivaldias.proposal.shared.CpfCnpj;
 import br.com.zup.jocivaldias.proposal.shared.exception.ApiErrorException;
 import org.springframework.http.HttpStatus;
 
-import javax.persistence.EntityManager;
-import javax.persistence.Query;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -45,12 +45,10 @@ public class NewProposalRequest {
         this.salary = salary;
     }
 
-    public Proposal toModel(EntityManager entityManager) {
-        Query query = entityManager.createQuery("select 1 from Proposal where document_number = :value");
-        query.setParameter("value", documentNumber);
-        List<?> resultList = query.getResultList();
+    public Proposal toModel(ProposalRepository proposalRepository) {
+        List<Proposal> proposalList = proposalRepository.findByDocumentNumber(documentNumber);
 
-        if(!resultList.isEmpty())
+        if(!proposalList.isEmpty())
             throw new ApiErrorException(HttpStatus.UNPROCESSABLE_ENTITY,
                     "There is already a proposal associated with this CPF / CNPJ");
 

@@ -1,5 +1,7 @@
 package br.com.zup.jocivaldias.proposal.newproposal;
 
+import br.com.zup.jocivaldias.proposal.newproposal.dto.request.ProposalAnalysisRequest;
+import br.com.zup.jocivaldias.proposal.newproposal.dto.response.ProposalAnalysisResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
