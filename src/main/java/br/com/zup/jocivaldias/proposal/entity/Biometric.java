@@ -15,7 +15,6 @@ public class Biometric {
     @Column(columnDefinition = "binary(16)")
     private UUID id;
 
-    //TODO: Verificar se é para salvar as features da biometria no banco de dados ou a imagem da biometria no filesystem
     @Lob
     @NotNull
     @Column(nullable = false)
