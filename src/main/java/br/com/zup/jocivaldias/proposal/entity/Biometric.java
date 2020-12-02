@@ -1,6 +1,7 @@
 package br.com.zup.jocivaldias.proposal.entity;
 
 import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.util.Assert;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
@@ -31,7 +32,11 @@ public class Biometric {
     private Biometric() {
     }
 
-    public Biometric(byte[] fingerprint, @NotNull CreditCard creditCard) {
+    public Biometric(@NotNull byte[] fingerprint, @NotNull CreditCard creditCard) {
+
+        Assert.notNull(fingerprint, "Fingerprint cant be null");
+        Assert.notNull(creditCard, "CreditCard cant be null");
+
         this.fingerprint = fingerprint;
         this.creditCard = creditCard;
     }
