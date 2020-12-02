@@ -2,21 +2,25 @@ package br.com.zup.jocivaldias.proposal.entity;
 
 import org.springframework.util.Assert;
 
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.OneToOne;
+import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.util.UUID;
 
 @Entity
 public class CreditCard {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(columnDefinition = "binary(16)")
+    private UUID id;
+
     @NotBlank
+    @Column(nullable = false)
     private String cardNumber;
 
     @NotNull
-    @OneToOne
+    @OneToOne(optional = false)
     private Proposal proposal;
 
     @Deprecated
@@ -32,6 +36,10 @@ public class CreditCard {
 
         this.cardNumber = cardNumber;
         this.proposal = proposal;
+    }
+
+    public UUID getId() {
+        return id;
     }
 
     public String getCardNumber() {
