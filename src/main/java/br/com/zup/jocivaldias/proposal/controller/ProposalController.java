@@ -44,12 +44,15 @@ public class ProposalController {
     public ResponseEntity<?> create(@RequestBody @Valid NewProposalRequest newProposalRequest,
                                     UriComponentsBuilder uriComponentsBuilder) {
 
+        logger.error("exemplo de log só pra ver");
         Proposal proposal = newProposalRequest.toModel(proposalRepository);
 
         transactionTemplate.execute(status -> {
             proposalRepository.save(proposal);
             return proposal.getId();
         });
+
+
 
         URI uri = uriComponentsBuilder.path("/proposals/{id}").buildAndExpand(proposal.getId()).toUri();
         return ResponseEntity.created(uri).build();
