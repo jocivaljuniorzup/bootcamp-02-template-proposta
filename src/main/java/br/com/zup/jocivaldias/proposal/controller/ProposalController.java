@@ -51,18 +51,6 @@ public class ProposalController {
             return proposal.getId();
         });
 
-        ProposalAnalysisResponse proposalAnalysisResponse = proposalAnalysisService.analyzesProposal(proposal);
-        if( proposalAnalysisResponse.getResultadoSolicitacao().equalsIgnoreCase("SEM_RESTRICAO")){
-            proposal.setStatus(ProposalStatus.ELIGIBLE);
-        } else {
-            proposal.setStatus(ProposalStatus.NOT_ELIGIBLE);
-        }
-
-        transactionTemplate.execute(status -> {
-            proposalRepository.save(proposal);
-            return proposal.getId();
-        });
-
         URI uri = uriComponentsBuilder.path("/proposals/{id}").buildAndExpand(proposal.getId()).toUri();
         return ResponseEntity.created(uri).build();
     }

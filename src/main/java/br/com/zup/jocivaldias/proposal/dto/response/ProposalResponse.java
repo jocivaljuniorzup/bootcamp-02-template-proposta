@@ -36,6 +36,11 @@ public class ProposalResponse {
     }
 
     public static ProposalResponse fromModel(Proposal proposal) {
+        CreditCardResponse creditCardResponse = null;
+        if(proposal.getCreditCard() != null){
+             creditCardResponse = CreditCardResponse.toModel(proposal.getCreditCard());
+        }
+
         return new ProposalResponse(
                 proposal.getId(),
                 proposal.getDocumentNumber(),
@@ -44,7 +49,7 @@ public class ProposalResponse {
                 proposal.getAddress(),
                 proposal.getSalary(),
                 proposal.getStatus(),
-                CreditCardResponse.toModel(proposal.getCreditCard())
+                creditCardResponse
         );
     }
 

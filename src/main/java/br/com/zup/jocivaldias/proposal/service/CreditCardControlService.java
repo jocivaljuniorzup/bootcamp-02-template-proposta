@@ -1,9 +1,13 @@
 package br.com.zup.jocivaldias.proposal.service;
 
+import br.com.zup.jocivaldias.proposal.dto.request.LockCreditCardRequest;
 import br.com.zup.jocivaldias.proposal.dto.request.NewCreditCardRequest;
 import br.com.zup.jocivaldias.proposal.entity.CreditCard;
+import br.com.zup.jocivaldias.proposal.entity.CreditCardLock;
 import br.com.zup.jocivaldias.proposal.entity.Proposal;
+import br.com.zup.jocivaldias.proposal.entity.enums.CreditCardStatus;
 import br.com.zup.jocivaldias.proposal.entity.enums.ProposalStatus;
+import br.com.zup.jocivaldias.proposal.repository.CreditCardLockRepository;
 import br.com.zup.jocivaldias.proposal.repository.CreditCardRepository;
 import br.com.zup.jocivaldias.proposal.repository.ProposalRepository;
 import feign.FeignException;
@@ -16,6 +20,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class CreditCardControlService {
@@ -23,6 +28,7 @@ public class CreditCardControlService {
     private CreditCardControl creditCardControl;
     private ProposalRepository proposalRepository;
     private CreditCardRepository creditCardRepository;
+    private CreditCardLockRepository creditCardLockRepository;
     private final TransactionTemplate transactionTemplate;
 
     private Logger logger = LoggerFactory.getLogger(CreditCardControlService.class);
@@ -30,10 +36,12 @@ public class CreditCardControlService {
     public CreditCardControlService(CreditCardControl creditCardControl,
                                     ProposalRepository proposalRepository,
                                     CreditCardRepository creditCardRepository,
+                                    CreditCardLockRepository creditCardLockRepository,
                                     TransactionTemplate transactionTemplate) {
         this.creditCardControl = creditCardControl;
         this.proposalRepository = proposalRepository;
         this.creditCardRepository = creditCardRepository;
+        this.creditCardLockRepository = creditCardLockRepository;
         this.transactionTemplate = transactionTemplate;
     }
 
@@ -55,7 +63,7 @@ public class CreditCardControlService {
                     proposal.setStatus(ProposalStatus.CREDIT_CARD_ISSUED);
 
                     transactionTemplate.execute(status -> {
-                        creditCardRepository.save(new CreditCard(cardNumber, proposal));
+                        creditCardRepository.save(new CreditCard(cardNumber, proposal, CreditCardStatus.UNLOCKED));
                         proposalRepository.save(proposal);
                         return true;
                     });
@@ -71,6 +79,34 @@ public class CreditCardControlService {
                         exception.status(),
                         exception.contentUTF8(),
                         exception.getMessage());
+            }
+        }
+    }
+
+    @Scheduled(fixedDelay = 4000)
+    public void informLockCreditCard(){
+        LockCreditCardRequest request = new LockCreditCardRequest("proposals");
+
+        List<CreditCardLock> unlockedCardsWithLock = creditCardLockRepository.findByCreditCardStatus(CreditCardStatus.UNLOCKED);
+
+        for(CreditCardLock creditCardLock : unlockedCardsWithLock){
+            try {
+                CreditCard creditCard = creditCardLock.getCreditCard();
+                Map<String, String> response = creditCardControl.informLockForCreditCard(creditCard.getCardNumber(), request);
+                if (response.get("resultado").equalsIgnoreCase("BLOQUEADO")) {
+                    creditCard.setCreditCardStatus(CreditCardStatus.LOCKED);
+                    transactionTemplate.execute(status -> {
+                        creditCardRepository.save(creditCard);
+                        return true;
+                    });
+                } else {
+                    logger.error("Invalid return in Inform Credit Card Lock API - Body: {}", response);
+                }
+            } catch (FeignException feignException){
+                logger.error("Error in Inform Credit Card Lock API - Status code: {}, Body: {}, Message: {}",
+                        feignException.status(),
+                        feignException.contentUTF8(),
+                        feignException.getMessage());
             }
         }
     }

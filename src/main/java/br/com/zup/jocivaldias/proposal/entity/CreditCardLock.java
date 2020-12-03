@@ -50,5 +50,7 @@ public class CreditCardLock {
         this.creditCard = creditCard;
     }
 
-
+    public CreditCard getCreditCard() {
+        return creditCard;
+    }
 }

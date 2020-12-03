@@ -9,9 +9,9 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>br.com.zup.jocivaldias</groupId>
-	<artifactId>proposal</artifactId>
+	<artifactId>nosso-banco-proposta</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>proposal</name>
+	<name>nosso-banco-proposta</name>
 	<description>Credit card opening proposal</description>
 
 	<properties>

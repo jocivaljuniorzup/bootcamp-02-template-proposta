@@ -7,6 +7,7 @@ import br.com.zup.jocivaldias.proposal.entity.CreditCardLock;
 import br.com.zup.jocivaldias.proposal.repository.BiometricRepository;
 import br.com.zup.jocivaldias.proposal.repository.CreditCardLockRepository;
 import br.com.zup.jocivaldias.proposal.repository.CreditCardRepository;
+import br.com.zup.jocivaldias.proposal.service.CreditCardControlService;
 import br.com.zup.jocivaldias.proposal.shared.exception.ApiErrorException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -54,7 +55,6 @@ public class CreditCardController {
 
     @PostMapping(path = "/{id}/locks/")
     @Transactional
-//   TODO: verificar a melhor maneira de validar as informações presentes no header
     public ResponseEntity<?> lockCard(@PathVariable(name = "id") UUID id,
                                       @RequestHeader(name="user-agent") @NotBlank String userAgent,
                                       HttpServletRequest request){
