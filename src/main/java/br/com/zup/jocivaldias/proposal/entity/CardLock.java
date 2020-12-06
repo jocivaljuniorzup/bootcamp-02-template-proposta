@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-public class CreditCardLock {
+public class CardLock {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -34,12 +34,12 @@ public class CreditCardLock {
     private CreditCard creditCard;
 
     @Deprecated
-    private CreditCardLock() {
+    private CardLock() {
     }
 
-    public CreditCardLock(@NotBlank String requestIp,
-                          @NotBlank String requestUserAgent,
-                          @NotNull CreditCard creditCard) {
+    public CardLock(@NotBlank String requestIp,
+                    @NotBlank String requestUserAgent,
+                    @NotNull CreditCard creditCard) {
 
         Assert.hasText(requestIp, "User ip cant be blank");
         Assert.hasText(requestUserAgent, "Request user agent cant be blank");

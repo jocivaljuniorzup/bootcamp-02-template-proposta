@@ -15,7 +15,6 @@ public class ProposalResponse {
     private String address;
     private BigDecimal salary;
     private ProposalStatus status;
-    private CreditCardResponse creditCard;
 
     public ProposalResponse(UUID id,
                             String documentNumber,
@@ -23,8 +22,7 @@ public class ProposalResponse {
                             String name,
                             String address,
                             BigDecimal salary,
-                            ProposalStatus status,
-                            CreditCardResponse creditCard) {
+                            ProposalStatus status) {
         this.id = id;
         this.documentNumber = documentNumber;
         this.email = email;
@@ -32,15 +30,9 @@ public class ProposalResponse {
         this.address = address;
         this.salary = salary;
         this.status = status;
-        this.creditCard = creditCard;
     }
 
     public static ProposalResponse fromModel(Proposal proposal) {
-        CreditCardResponse creditCardResponse = null;
-        if(proposal.getCreditCard() != null){
-             creditCardResponse = CreditCardResponse.toModel(proposal.getCreditCard());
-        }
-
         return new ProposalResponse(
                 proposal.getId(),
                 proposal.getDocumentNumber(),
@@ -48,8 +40,7 @@ public class ProposalResponse {
                 proposal.getName(),
                 proposal.getAddress(),
                 proposal.getSalary(),
-                proposal.getStatus(),
-                creditCardResponse
+                proposal.getStatus()
         );
     }
 
@@ -79,9 +70,5 @@ public class ProposalResponse {
 
     public ProposalStatus getStatus() {
         return status;
-    }
-
-    public CreditCardResponse getCreditCard() {
-        return creditCard;
     }
 }

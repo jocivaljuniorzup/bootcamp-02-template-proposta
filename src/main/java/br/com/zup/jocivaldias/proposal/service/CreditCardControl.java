@@ -1,22 +1,23 @@
 package br.com.zup.jocivaldias.proposal.service;
 
 import br.com.zup.jocivaldias.proposal.dto.request.LockCreditCardRequest;
-import br.com.zup.jocivaldias.proposal.dto.request.NewCreditCardRequest;
+import br.com.zup.jocivaldias.proposal.dto.request.TravelCreditCardRequest;
+import br.com.zup.jocivaldias.proposal.dto.response.CreditCardResponse;
 import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
 @FeignClient(name="creditCardGenerator", url = "${credit.card.control.host}")
 public interface CreditCardControl {
 
-    @PostMapping(path = "/api/cartoes", consumes = "application/json", produces = "application/json")
-    ResponseEntity<?> generateCreditCard(@RequestBody NewCreditCardRequest newCreditCardRequest);
+    @GetMapping(path = "/api/cartoes/{od}", consumes = "application/json", produces = "application/json")
+    CreditCardResponse getCreditCard(@RequestParam(name="idProposta") String idProposal);
 
     @PostMapping(path = "/api/cartoes/{creditCardNumber}/bloqueios", consumes = "application/json", produces = "application/json")
-    Map<String, String> informLockForCreditCard(@PathVariable(name = "creditCardNumber") String creditCardNumber, @RequestBody LockCreditCardRequest lockRequest);
+    Map<String, String> informLockCreditCard(@PathVariable(name = "creditCardNumber") String creditCardNumber, @RequestBody LockCreditCardRequest lockRequest);
+
+    @PostMapping(path = "/api/cartoes/{creditCardNumber}/avisos", consumes = "application/json", produces = "application/json")
+    Map<String, String> informTravelCreditCard(@PathVariable(name = "creditCardNumber") String creditCardNumber, @RequestBody TravelCreditCardRequest request);
 
 }

@@ -1,16 +1,20 @@
 package br.com.zup.jocivaldias.proposal.controller;
 
 import br.com.zup.jocivaldias.proposal.dto.request.NewBiometricRequest;
+import br.com.zup.jocivaldias.proposal.dto.request.NewTravelNoticeRequest;
 import br.com.zup.jocivaldias.proposal.entity.Biometric;
+import br.com.zup.jocivaldias.proposal.entity.CardLock;
 import br.com.zup.jocivaldias.proposal.entity.CreditCard;
-import br.com.zup.jocivaldias.proposal.entity.CreditCardLock;
+import br.com.zup.jocivaldias.proposal.entity.TravelNotice;
 import br.com.zup.jocivaldias.proposal.repository.BiometricRepository;
-import br.com.zup.jocivaldias.proposal.repository.CreditCardLockRepository;
+import br.com.zup.jocivaldias.proposal.repository.CardLockRepository;
 import br.com.zup.jocivaldias.proposal.repository.CreditCardRepository;
+import br.com.zup.jocivaldias.proposal.repository.TravelNoticeRepository;
 import br.com.zup.jocivaldias.proposal.service.CreditCardControlService;
 import br.com.zup.jocivaldias.proposal.shared.exception.ApiErrorException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -28,14 +32,22 @@ public class CreditCardController {
 
     private BiometricRepository biometricRepository;
     private CreditCardRepository creditCardRepository;
-    private CreditCardLockRepository creditCardLockRepository;
+    private CardLockRepository cardLockRepository;
+    private TravelNoticeRepository travelNoticeRepository;
+    private CreditCardControlService creditCardControlService;
+    private TransactionTemplate transactionTemplate;
 
     public CreditCardController(BiometricRepository biometricRepository,
                                 CreditCardRepository creditCardRepository,
-                                CreditCardLockRepository creditCardLockRepository) {
+                                CardLockRepository cardLockRepository,
+                                TravelNoticeRepository travelNoticeRepository,
+                                CreditCardControlService creditCardControlService, TransactionTemplate transactionTemplate) {
         this.biometricRepository = biometricRepository;
         this.creditCardRepository = creditCardRepository;
-        this.creditCardLockRepository = creditCardLockRepository;
+        this.cardLockRepository = cardLockRepository;
+        this.travelNoticeRepository = travelNoticeRepository;
+        this.creditCardControlService = creditCardControlService;
+        this.transactionTemplate = transactionTemplate;
     }
 
     @PostMapping(path = "/{id}/biometrics/")
@@ -60,17 +72,41 @@ public class CreditCardController {
                                       HttpServletRequest request){
 
         Optional<CreditCard> optionalCreditCard = creditCardRepository.findById(id);
-
         CreditCard creditCard = optionalCreditCard.orElseThrow(() -> {
             throw new ApiErrorException(HttpStatus.NOT_FOUND, "No credit card found for this ID");
         });
 
-        if(creditCard.isBlocked(creditCardLockRepository)){
+        if(creditCard.isBlocked(cardLockRepository)){
             throw new ApiErrorException(HttpStatus.UNPROCESSABLE_ENTITY, "Credit card already blocked.");
         }
 
-        CreditCardLock creditCardLock = new CreditCardLock(request.getRemoteAddr(), userAgent, creditCard);
-        creditCardLockRepository.save(creditCardLock);
+        CardLock cardLock = new CardLock(request.getRemoteAddr(), userAgent, creditCard);
+        cardLockRepository.save(cardLock);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping(path = "/{id}/travels/")
+    public ResponseEntity<?> travelNotice(@PathVariable(name = "id") UUID id,
+                                          @RequestBody @Valid NewTravelNoticeRequest newTravelNoticeRequest,
+                                          @RequestHeader(name="user-agent") @NotBlank String userAgent,
+                                          HttpServletRequest request){
+
+        Optional<CreditCard> optionalCreditCard = creditCardRepository.findById(id);
+        CreditCard creditCard = optionalCreditCard.orElseThrow(() -> {
+            throw new ApiErrorException(HttpStatus.NOT_FOUND, "No credit card found for this ID");
+        });
+
+        boolean success = creditCardControlService.informTripCreditCard(creditCard, newTravelNoticeRequest);
+        if(success){
+            TravelNotice travelNotice = newTravelNoticeRequest.toModel(creditCard, request.getRemoteAddr(), userAgent);
+            transactionTemplate.execute(status -> {
+                travelNoticeRepository.save(travelNotice);
+                return true;
+            });
+        } else {
+            throw new ApiErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Error validating travel notice");
+        }
 
         return ResponseEntity.ok().build();
     }
