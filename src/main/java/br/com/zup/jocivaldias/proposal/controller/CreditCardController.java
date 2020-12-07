@@ -10,6 +10,8 @@ import br.com.zup.jocivaldias.proposal.service.CreditCardControlService;
 import br.com.zup.jocivaldias.proposal.shared.exception.ApiErrorException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -54,9 +56,20 @@ public class CreditCardController {
     @Transactional
     public ResponseEntity<?> createBiometrics(@PathVariable(name = "id") UUID id,
                                               @RequestBody @Valid NewBiometricRequest newBiometricRequest,
-                                              UriComponentsBuilder uriComponentsBuilder){
+                                              UriComponentsBuilder uriComponentsBuilder,
+                                              @AuthenticationPrincipal Jwt principal){
 
-        Biometric biometric = newBiometricRequest.toModel(id, creditCardRepository);
+        Optional<CreditCard> optionalCreditCard = creditCardRepository.findById(id);
+
+        CreditCard creditCard = optionalCreditCard.orElseThrow(() -> {
+            throw new ApiErrorException(HttpStatus.NOT_FOUND, "No credit card found for this ID");
+        });
+
+        if(!creditCard.belongsToUser(principal.getClaimAsString("email"))){
+            throw new ApiErrorException(HttpStatus.FORBIDDEN, "CreditCard doest not belong to this user");
+        }
+
+        Biometric biometric = newBiometricRequest.toModel(id, creditCard);
         biometricRepository.save(biometric);
 
         URI uri = uriComponentsBuilder.path("/cards/{cardId}/biometrics/{biometricId}")
@@ -69,7 +82,8 @@ public class CreditCardController {
     @Transactional
     public ResponseEntity<?> lockCard(@PathVariable(name = "id") UUID id,
                                       @RequestHeader(name="user-agent") @NotBlank String userAgent,
-                                      HttpServletRequest request){
+                                      HttpServletRequest request,
+                                      @AuthenticationPrincipal Jwt principal){
 
         Optional<CreditCard> optionalCreditCard = creditCardRepository.findById(id);
         CreditCard creditCard = optionalCreditCard.orElseThrow(() -> {
@@ -78,6 +92,10 @@ public class CreditCardController {
 
         if(creditCard.isBlocked(cardLockRepository)){
             throw new ApiErrorException(HttpStatus.UNPROCESSABLE_ENTITY, "Credit card already blocked.");
+        }
+
+        if(!creditCard.belongsToUser(principal.getClaimAsString("email"))){
+            throw new ApiErrorException(HttpStatus.FORBIDDEN, "CreditCard doest not belong to this user");
         }
 
         CardLock cardLock = new CardLock(request.getRemoteAddr(), userAgent, creditCard);
@@ -90,12 +108,17 @@ public class CreditCardController {
     public ResponseEntity<?> travelNotice(@PathVariable(name = "id") UUID id,
                                           @RequestBody @Valid NewTravelNoticeRequest newTravelNoticeRequest,
                                           @RequestHeader(name="user-agent") @NotBlank String userAgent,
-                                          HttpServletRequest request){
+                                          HttpServletRequest request,
+                                          @AuthenticationPrincipal Jwt principal){
 
         Optional<CreditCard> optionalCreditCard = creditCardRepository.findById(id);
         CreditCard creditCard = optionalCreditCard.orElseThrow(() -> {
             throw new ApiErrorException(HttpStatus.NOT_FOUND, "No credit card found for this ID");
         });
+
+        if(!creditCard.belongsToUser(principal.getClaimAsString("email"))){
+            throw new ApiErrorException(HttpStatus.FORBIDDEN, "CreditCard doest not belong to this user");
+        }
 
         boolean success = creditCardControlService.informTripCreditCard(creditCard, newTravelNoticeRequest);
         if(success){
@@ -115,7 +138,8 @@ public class CreditCardController {
     public ResponseEntity<?> registerWallet(@PathVariable(name = "id") UUID id,
                                             @PathVariable(name = "walletProvider") String walletProvider,
                                             @RequestBody @Valid NewWalletRequest newWalletRequest,
-                                            UriComponentsBuilder uriComponentsBuilder){
+                                            UriComponentsBuilder uriComponentsBuilder,
+                                            @AuthenticationPrincipal Jwt principal){
 
         DigitalWalletProvider digitalWalletProvider = DigitalWalletProvider.toEnum(walletProvider);
         if(digitalWalletProvider == null){
@@ -127,14 +151,18 @@ public class CreditCardController {
             throw new ApiErrorException(HttpStatus.NOT_FOUND, "No credit card found for this ID");
         });
 
-        Optional<DigitalWallet> alreadyAssociated = digitalWalletRepository.findByIdAndProvider(id, digitalWalletProvider);
+        Optional<DigitalWallet> alreadyAssociated = digitalWalletRepository.findByCreditCardIdAndProvider(id, digitalWalletProvider);
         if(alreadyAssociated.isPresent()){
             throw new ApiErrorException(HttpStatus.UNPROCESSABLE_ENTITY, "Credit Card already associated with this provider");
         }
 
+        if(!creditCard.belongsToUser(principal.getClaimAsString("email"))){
+            throw new ApiErrorException(HttpStatus.FORBIDDEN, "CreditCard doest not belong to this user");
+        }
+
         boolean success = creditCardControlService.informDigitalWalletCreditCard(creditCard, newWalletRequest, digitalWalletProvider);
         if(success){
-            DigitalWallet digitalWallet = newWalletRequest.toModel(digitalWalletProvider);
+            DigitalWallet digitalWallet = newWalletRequest.toModel(digitalWalletProvider, creditCard);
             transactionTemplate.execute(status -> {
                 digitalWalletRepository.save(digitalWallet);
                 return true;

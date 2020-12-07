@@ -83,5 +83,9 @@ public class CreditCard {
         return cardLockRepository.findByCreditCardId(id).isPresent();
     }
 
+    public boolean belongsToUser(String email){
+        return proposal.belongsToUser(email);
+    }
+
 
 }

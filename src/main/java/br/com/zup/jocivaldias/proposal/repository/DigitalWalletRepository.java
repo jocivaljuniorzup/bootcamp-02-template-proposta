@@ -11,6 +11,6 @@ import java.util.UUID;
 @Repository
 public interface DigitalWalletRepository extends JpaRepository<DigitalWallet, UUID> {
 
-    Optional<DigitalWallet> findByIdAndProvider(UUID id, DigitalWalletProvider provider);
+    Optional<DigitalWallet> findByCreditCardIdAndProvider(UUID creditCardId, DigitalWalletProvider provider);
 
 }

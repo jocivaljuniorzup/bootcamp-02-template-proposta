@@ -116,4 +116,8 @@ public class Proposal {
     public void setCreditCard(CreditCard creditCard) {
         this.creditCard = creditCard;
     }
+
+    public boolean belongsToUser(String email) {
+        return email.equalsIgnoreCase(email);
+    }
 }

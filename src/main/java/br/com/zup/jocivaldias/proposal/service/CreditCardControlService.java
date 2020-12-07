@@ -46,7 +46,7 @@ public class CreditCardControlService {
     }
 
     @Scheduled(fixedDelay = 5000)
-    private void getCreditCard(){
+    protected void getCreditCard(){
         List<Proposal> proposalByStatus = proposalRepository.findByStatus(ProposalStatus.ELIGIBLE);
 
         for (Proposal proposal : proposalByStatus) {
@@ -76,7 +76,7 @@ public class CreditCardControlService {
     }
 
     @Scheduled(fixedDelay = 4000)
-    public void informLockCreditCard(){
+    protected void informLockCreditCard(){
         InformLockCreditCardRequest request = new InformLockCreditCardRequest("proposals");
 
         List<CardLock> unlockedCardsWithCardLock = cardLockRepository.findByCreditCardStatus(CreditCardStatus.UNLOCKED);

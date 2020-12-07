@@ -1,5 +1,6 @@
 package br.com.zup.jocivaldias.proposal.dto.request;
 
+import br.com.zup.jocivaldias.proposal.entity.CreditCard;
 import br.com.zup.jocivaldias.proposal.entity.DigitalWallet;
 import br.com.zup.jocivaldias.proposal.entity.enums.DigitalWalletProvider;
 
@@ -19,8 +20,8 @@ public class NewWalletRequest {
     public NewWalletRequest() {
     }
 
-    public DigitalWallet toModel(DigitalWalletProvider digitalWalletProvider){
-        return new DigitalWallet(email, digitalWalletProvider);
+    public DigitalWallet toModel(DigitalWalletProvider digitalWalletProvider, CreditCard creditCard){
+        return new DigitalWallet(email, digitalWalletProvider, creditCard);
     }
 
     public String getEmail() {
