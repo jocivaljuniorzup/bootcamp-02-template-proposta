@@ -2,14 +2,10 @@ package br.com.zup.jocivaldias.proposal.controller;
 
 import br.com.zup.jocivaldias.proposal.dto.request.NewBiometricRequest;
 import br.com.zup.jocivaldias.proposal.dto.request.NewTravelNoticeRequest;
-import br.com.zup.jocivaldias.proposal.entity.Biometric;
-import br.com.zup.jocivaldias.proposal.entity.CardLock;
-import br.com.zup.jocivaldias.proposal.entity.CreditCard;
-import br.com.zup.jocivaldias.proposal.entity.TravelNotice;
-import br.com.zup.jocivaldias.proposal.repository.BiometricRepository;
-import br.com.zup.jocivaldias.proposal.repository.CardLockRepository;
-import br.com.zup.jocivaldias.proposal.repository.CreditCardRepository;
-import br.com.zup.jocivaldias.proposal.repository.TravelNoticeRepository;
+import br.com.zup.jocivaldias.proposal.dto.request.NewWalletRequest;
+import br.com.zup.jocivaldias.proposal.entity.*;
+import br.com.zup.jocivaldias.proposal.entity.enums.DigitalWalletProvider;
+import br.com.zup.jocivaldias.proposal.repository.*;
 import br.com.zup.jocivaldias.proposal.service.CreditCardControlService;
 import br.com.zup.jocivaldias.proposal.shared.exception.ApiErrorException;
 import org.springframework.http.HttpStatus;
@@ -36,18 +32,22 @@ public class CreditCardController {
     private TravelNoticeRepository travelNoticeRepository;
     private CreditCardControlService creditCardControlService;
     private TransactionTemplate transactionTemplate;
+    private DigitalWalletRepository digitalWalletRepository;
 
     public CreditCardController(BiometricRepository biometricRepository,
                                 CreditCardRepository creditCardRepository,
                                 CardLockRepository cardLockRepository,
                                 TravelNoticeRepository travelNoticeRepository,
-                                CreditCardControlService creditCardControlService, TransactionTemplate transactionTemplate) {
+                                CreditCardControlService creditCardControlService,
+                                TransactionTemplate transactionTemplate,
+                                DigitalWalletRepository digitalWalletRepository) {
         this.biometricRepository = biometricRepository;
         this.creditCardRepository = creditCardRepository;
         this.cardLockRepository = cardLockRepository;
         this.travelNoticeRepository = travelNoticeRepository;
         this.creditCardControlService = creditCardControlService;
         this.transactionTemplate = transactionTemplate;
+        this.digitalWalletRepository = digitalWalletRepository;
     }
 
     @PostMapping(path = "/{id}/biometrics/")
@@ -105,10 +105,48 @@ public class CreditCardController {
                 return true;
             });
         } else {
-            throw new ApiErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Error validating travel notice");
+            throw new ApiErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Error to process requisition");
         }
 
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping(path = "/{id}/wallets/{walletProvider}")
+    public ResponseEntity<?> registerWallet(@PathVariable(name = "id") UUID id,
+                                            @PathVariable(name = "walletProvider") String walletProvider,
+                                            @RequestBody @Valid NewWalletRequest newWalletRequest,
+                                            UriComponentsBuilder uriComponentsBuilder){
+
+        DigitalWalletProvider digitalWalletProvider = DigitalWalletProvider.toEnum(walletProvider);
+        if(digitalWalletProvider == null){
+            throw new ApiErrorException(HttpStatus.NOT_FOUND, "Invalid Digital Wallet Provider");
+        }
+
+        Optional<CreditCard> optionalCreditCard = creditCardRepository.findById(id);
+        CreditCard creditCard = optionalCreditCard.orElseThrow(() -> {
+            throw new ApiErrorException(HttpStatus.NOT_FOUND, "No credit card found for this ID");
+        });
+
+        Optional<DigitalWallet> alreadyAssociated = digitalWalletRepository.findByIdAndProvider(id, digitalWalletProvider);
+        if(alreadyAssociated.isPresent()){
+            throw new ApiErrorException(HttpStatus.UNPROCESSABLE_ENTITY, "Credit Card already associated with this provider");
+        }
+
+        boolean success = creditCardControlService.informDigitalWalletCreditCard(creditCard, newWalletRequest, digitalWalletProvider);
+        if(success){
+            DigitalWallet digitalWallet = newWalletRequest.toModel(digitalWalletProvider);
+            transactionTemplate.execute(status -> {
+                digitalWalletRepository.save(digitalWallet);
+                return true;
+            });
+
+            URI uri = uriComponentsBuilder.path("/{id}/wallets/{wallet}/{id}")
+                    .buildAndExpand(id, digitalWalletProvider.name().toLowerCase(), digitalWallet.getId())
+                    .toUri();
+            return ResponseEntity.created(uri).build();
+        } else {
+            throw new ApiErrorException(HttpStatus.INTERNAL_SERVER_ERROR, "Error to process requisition");
+        }
     }
 
 }

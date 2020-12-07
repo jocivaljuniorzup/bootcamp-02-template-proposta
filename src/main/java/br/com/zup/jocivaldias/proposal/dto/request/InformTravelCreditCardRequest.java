@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.time.LocalDate;
 
-public class TravelCreditCardRequest {
+public class InformTravelCreditCardRequest {
 
     @JsonProperty("destino")
     private String destination;
@@ -14,7 +14,7 @@ public class TravelCreditCardRequest {
     @JsonProperty("validoAte")
     private LocalDate validUntil;
 
-    public TravelCreditCardRequest(String destination, LocalDate validUntil) {
+    public InformTravelCreditCardRequest(String destination, LocalDate validUntil) {
         this.destination = destination;
         this.validUntil = validUntil;
     }
@@ -29,7 +29,7 @@ public class TravelCreditCardRequest {
 
     @Override
     public String toString() {
-        return "TravelCreditCardRequest{" +
+        return "InformTravelCreditCardRequest{" +
                 "destination='" + destination + '\'' +
                 ", validUntil=" + validUntil +
                 '}';

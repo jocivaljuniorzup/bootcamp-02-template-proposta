@@ -1,27 +1,24 @@
 package br.com.zup.jocivaldias.proposal.service;
 
-import br.com.zup.jocivaldias.proposal.dto.request.LockCreditCardRequest;
-import br.com.zup.jocivaldias.proposal.dto.request.NewTravelNoticeRequest;
-import br.com.zup.jocivaldias.proposal.dto.request.TravelCreditCardRequest;
+import br.com.zup.jocivaldias.proposal.dto.request.*;
 import br.com.zup.jocivaldias.proposal.dto.response.CreditCardResponse;
 import br.com.zup.jocivaldias.proposal.entity.CardLock;
 import br.com.zup.jocivaldias.proposal.entity.CreditCard;
 import br.com.zup.jocivaldias.proposal.entity.Proposal;
 import br.com.zup.jocivaldias.proposal.entity.enums.CreditCardStatus;
+import br.com.zup.jocivaldias.proposal.entity.enums.DigitalWalletProvider;
 import br.com.zup.jocivaldias.proposal.entity.enums.ProposalStatus;
 import br.com.zup.jocivaldias.proposal.repository.CardLockRepository;
 import br.com.zup.jocivaldias.proposal.repository.CreditCardRepository;
 import br.com.zup.jocivaldias.proposal.repository.ProposalRepository;
-import br.com.zup.jocivaldias.proposal.shared.exception.ApiErrorException;
 import feign.FeignException;
-import net.bytebuddy.implementation.bytecode.Throw;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Map;
 
@@ -80,7 +77,7 @@ public class CreditCardControlService {
 
     @Scheduled(fixedDelay = 4000)
     public void informLockCreditCard(){
-        LockCreditCardRequest request = new LockCreditCardRequest("proposals");
+        InformLockCreditCardRequest request = new InformLockCreditCardRequest("proposals");
 
         List<CardLock> unlockedCardsWithCardLock = cardLockRepository.findByCreditCardStatus(CreditCardStatus.UNLOCKED);
 
@@ -106,15 +103,12 @@ public class CreditCardControlService {
         }
     }
 
-    public boolean informTripCreditCard(CreditCard creditCard, NewTravelNoticeRequest newTravelNoticeRequest){
-        TravelCreditCardRequest travelCreditCardRequest = new TravelCreditCardRequest(newTravelNoticeRequest.getDestination(),
+    public boolean informTripCreditCard(CreditCard creditCard, @Valid NewTravelNoticeRequest newTravelNoticeRequest){
+        InformTravelCreditCardRequest informTravelCreditCardRequest = new InformTravelCreditCardRequest(newTravelNoticeRequest.getDestination(),
                 newTravelNoticeRequest.getEndDate());
 
-        System.out.println(travelCreditCardRequest);
-
         try {
-            Map<String, String> response = creditCardControl.informTravelCreditCard(creditCard.getCardNumber(), travelCreditCardRequest);
-            System.out.println("Pica preta\n\n: " + response);
+            Map<String, String> response = creditCardControl.informTravelCreditCard(creditCard.getCardNumber(), informTravelCreditCardRequest);
             if (response.get("resultado").equalsIgnoreCase("CRIADO")) {
                 return true;
             } else {
@@ -131,4 +125,27 @@ public class CreditCardControlService {
     }
 
 
+    public boolean informDigitalWalletCreditCard(CreditCard creditCard,
+                                                 @Valid NewWalletRequest newWalletRequest,
+                                                 DigitalWalletProvider digitalWalletProvider) {
+        InformDigitalWalletRequest informDigitalWalletRequest = new InformDigitalWalletRequest(newWalletRequest.getEmail(), digitalWalletProvider);
+
+        try {
+            Map<String, String> response = creditCardControl.informDigitalWallet(creditCard.getCardNumber(), informDigitalWalletRequest);
+
+            if(response.get("resultado").equalsIgnoreCase("ASSOCIADA")){
+                return true;
+            } else {
+                logger.error("Invalid return in Inform Credit Card Wallet Association API - Body: {}", response);
+                return false;
+            }
+        } catch (FeignException feignException){
+            logger.error("Error in Inform Credit Card Wallet Association API - Status code: {}, Body: {}, Message: {}",
+                    feignException.status(),
+                    feignException.contentUTF8(),
+                    feignException.getMessage());
+            return false;
+        }
+
+    }
 }
