@@ -1,6 +1,7 @@
 package br.com.zup.jocivaldias.proposal.entity;
 
 import br.com.zup.jocivaldias.proposal.entity.enums.ProposalStatus;
+import br.com.zup.jocivaldias.proposal.entity.util.AttributeEncryptor;
 import br.com.zup.jocivaldias.proposal.shared.validator.CpfCnpj;
 import org.springframework.util.Assert;
 
@@ -23,6 +24,12 @@ public class Proposal {
     @NotBlank
     @CpfCnpj
     @Column(nullable = false)
+    @Convert(converter = AttributeEncryptor.class)
+    // Poderia utilizar também da seguinte maneira:
+    //    @ColumnTransformer(
+    //            read = "AES_DECRYPT(documentNumber, 'secret-key-12345')",
+    //            write = "AES_ENCRYPT(documentNumber, 'secret-key-12345')"
+    //    )
     private String documentNumber;
 
     @NotBlank
