@@ -2,6 +2,7 @@ package br.com.zup.jocivaldias.proposal.repository;
 
 import br.com.zup.jocivaldias.proposal.entity.Proposal;
 import br.com.zup.jocivaldias.proposal.entity.enums.ProposalStatus;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -11,8 +12,8 @@ import java.util.UUID;
 @Repository
 public interface ProposalRepository extends JpaRepository<Proposal, UUID> {
 
-    public List<Proposal> findByDocumentNumber(String documentNumber);
+    List<Proposal> findAllByDocumentNumber(String documentNumber);
 
-    public List<Proposal> findByStatus(ProposalStatus status);
+    List<Proposal> findAllByStatus(ProposalStatus status, Pageable pageable);
 
 }

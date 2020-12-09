@@ -14,6 +14,7 @@ import br.com.zup.jocivaldias.proposal.repository.ProposalRepository;
 import feign.FeignException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -47,7 +48,8 @@ public class CreditCardControlService {
 
     @Scheduled(fixedDelay = 5000)
     protected void getCreditCard(){
-        List<Proposal> proposalByStatus = proposalRepository.findByStatus(ProposalStatus.ELIGIBLE);
+        List<Proposal> proposalByStatus = proposalRepository.findAllByStatus(ProposalStatus.ELIGIBLE,
+                PageRequest.of(0, 100));
 
         for (Proposal proposal : proposalByStatus) {
             try {
@@ -79,7 +81,8 @@ public class CreditCardControlService {
     protected void informLockCreditCard(){
         InformLockCreditCardRequest request = new InformLockCreditCardRequest("proposals");
 
-        List<CardLock> unlockedCardsWithCardLock = cardLockRepository.findByCreditCardStatus(CreditCardStatus.UNLOCKED);
+        List<CardLock> unlockedCardsWithCardLock = cardLockRepository.findAllByCreditCardStatus(CreditCardStatus.UNLOCKED,
+                PageRequest.of(0, 100));
 
         for(CardLock cardLock : unlockedCardsWithCardLock){
             try {

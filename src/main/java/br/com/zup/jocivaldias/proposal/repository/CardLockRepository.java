@@ -2,6 +2,7 @@ package br.com.zup.jocivaldias.proposal.repository;
 
 import br.com.zup.jocivaldias.proposal.entity.CardLock;
 import br.com.zup.jocivaldias.proposal.entity.enums.CreditCardStatus;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,6 +15,6 @@ public interface CardLockRepository extends JpaRepository<CardLock, UUID> {
 
     Optional<CardLock> findByCreditCardId(UUID id);
 
-    List<CardLock> findByCreditCardStatus(CreditCardStatus status);
+    List<CardLock> findAllByCreditCardStatus(CreditCardStatus status, Pageable pageable);
 
 }

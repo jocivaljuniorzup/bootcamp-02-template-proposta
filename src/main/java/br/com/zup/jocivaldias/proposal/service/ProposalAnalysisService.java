@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import feign.FeignException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -35,7 +36,8 @@ public class ProposalAnalysisService {
 
     @Scheduled(fixedDelay = 6000)
     public void analyzesProposal(){
-        List<Proposal> pendingAnalysisProposals = proposalRepository.findByStatus(ProposalStatus.OPENED);
+        List<Proposal> pendingAnalysisProposals = proposalRepository.findAllByStatus(ProposalStatus.OPENED,
+                PageRequest.of(0, 10));
         for(Proposal proposal : pendingAnalysisProposals) {
 
             ProposalAnalysisRequest proposalAnalysisRequest = new ProposalAnalysisRequest(proposal.getDocumentNumber(),

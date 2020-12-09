@@ -46,7 +46,7 @@ public class NewProposalRequest {
     }
 
     public Proposal toModel(ProposalRepository proposalRepository) {
-        List<Proposal> proposalList = proposalRepository.findByDocumentNumber(documentNumber);
+        List<Proposal> proposalList = proposalRepository.findAllByDocumentNumber(documentNumber);
 
         if(!proposalList.isEmpty())
             throw new ApiErrorException(HttpStatus.UNPROCESSABLE_ENTITY,
